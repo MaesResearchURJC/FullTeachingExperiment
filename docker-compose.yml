@@ -1,0 +1,57 @@
+version: '3'
+services:
+ eus:
+   image: elastest/eus
+   environment:
+     - ET_FILES_PATH_IN_HOST=/tmp
+     - ET_DATA_IN_HOST=/tmp
+     - USE_TORM=true
+   ports:
+     - 8040:8040
+   networks:
+     - "elastest_elastest"
+   volumes: 
+     - /var/run/docker.sock:/var/run/docker.sock
+ full-teaching-mysql:
+   image: mysql:5.7.21
+   environment:
+     - MYSQL_ROOT_PASSWORD=pass
+     - MYSQL_DATABASE=full_teaching
+     - MYSQL_USER=ft-root
+     - MYSQL_PASSWORD=pass
+   networks:
+     - "elastest_elastest"
+ full-teaching-openvidu-server-kms:
+   image: openvidu/openvidu-server-kms:1.7.0
+   expose:
+     - 8443
+   environment:
+     - KMS_STUN_IP=stun.l.google.com
+     - KMS_STUN_PORT=19302
+     - openvidu.secret=MY_SECRET
+     - openvidu.publicurl=docker
+   networks:
+     - "elastest_elastest"
+ full-teaching:
+   image: codeurjc/full-teaching:${BUG}
+   depends_on:
+     - full-teaching-mysql
+     - full-teaching-openvidu-server-kms
+   ports:
+     - 5000:5000
+   networks:
+     - "elastest_elastest"
+   environment:
+     - WAIT_HOSTS=full-teaching-mysql:3306
+     - WAIT_HOSTS_TIMEOUT=120
+     - MYSQL_PORT_3306_TCP_ADDR=full-teaching-mysql
+     - MYSQL_PORT_3306_TCP_PORT=3306
+     - MYSQL_ENV_MYSQL_DATABASE=full_teaching
+     - MYSQL_ENV_MYSQL_USER=ft-root
+     - MYSQL_ENV_MYSQL_PASSWORD=pass
+     - server.port=5000
+     - openvidu.url=https://full-teaching-openvidu-server-kms:8443
+     - openvidu.secret=MY_SECRET
+networks:
+  elastest_elastest:
+    external: true
