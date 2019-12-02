@@ -29,6 +29,9 @@ echo "Starting FullTeaching using DockerCompose"
 # CREATE A DOCKER VOLUME TO STORE AND RE-USE THE MAVEN PACKAGES
 docker volume create --name maven-repo
 
+# CREARE NETWORK
+docker network create elastest_elastest
+
 # INIT SERVER (SUT)
 docker-compose up -d
 
@@ -52,8 +55,8 @@ done
 
 echo "EUS UP in $ET_EUS_API"
 
-echo "Waiting a bit more ... (120s)"
-sleep 120
+echo "Waiting a bit more ... (240s)"
+sleep 240
 
 # RUN TESTs
 for TEST in ${TESTS[@]};
